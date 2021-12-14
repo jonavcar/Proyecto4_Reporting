@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import com.banck.reporting.domain.DateIDateF;
-import com.banck.reporting.domain.Movement;
 import com.banck.reporting.domain.ProductMovementDto;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,6 +25,9 @@ import reactor.netty.tcp.TcpClient;
 @RequiredArgsConstructor
 public class CreditMovementOperationsImpl implements CreditMovementOperations {
 
+    @Value(value = "${service.credit-mov.url}")
+    private String SERVICE_CREDIT_MOV_URL;
+
     org.slf4j.Logger logger = LoggerFactory.getLogger(CreditOperationsImpl.class);
 
     @Override
@@ -37,7 +40,7 @@ public class CreditMovementOperationsImpl implements CreditMovementOperations {
                         .addHandlerLast(new WriteTimeoutHandler(3)));
 
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:8084")
+                .baseUrl(SERVICE_CREDIT_MOV_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 //.clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient))) // timeout

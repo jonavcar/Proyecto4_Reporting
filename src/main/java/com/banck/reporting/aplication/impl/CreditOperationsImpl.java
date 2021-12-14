@@ -13,14 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.TcpClient;
 import com.banck.reporting.aplication.CreditOperations;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  *
@@ -30,6 +29,8 @@ import com.banck.reporting.aplication.CreditOperations;
 @RequiredArgsConstructor
 public class CreditOperationsImpl implements CreditOperations {
 
+    @Value(value = "${service.credit.url}")
+    private String SERVICE_CREDIT_URL;
     Logger logger = LoggerFactory.getLogger(CreditOperationsImpl.class);
 
     @Override
@@ -42,14 +43,14 @@ public class CreditOperationsImpl implements CreditOperations {
                         .addHandlerLast(new WriteTimeoutHandler(3)));
 
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:8082")
+                .baseUrl(SERVICE_CREDIT_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 //.clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient))) // timeout
                 .build();
 
         return webClient.get()
-                .uri("/banck-credit/summary/"+customer+"/list")
+                .uri("/banck-credit/summary/" + customer + "/list")
                 .retrieve()
                 .bodyToFlux(ProductSummaryDto.class).flatMap(o -> {
             return Mono.just(o);

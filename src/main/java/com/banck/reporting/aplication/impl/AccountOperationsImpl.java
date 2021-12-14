@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.netty.tcp.TcpClient;
 import com.banck.reporting.aplication.AccountOperations;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  *
@@ -28,6 +29,8 @@ import com.banck.reporting.aplication.AccountOperations;
 @RequiredArgsConstructor
 public class AccountOperationsImpl implements AccountOperations {
 
+    @Value(value = "${service.account.url}")
+    private String SERVICE_ACCOUNT_URL;
     Logger logger = LoggerFactory.getLogger(AccountOperationsImpl.class);
 
     @Override
@@ -40,14 +43,14 @@ public class AccountOperationsImpl implements AccountOperations {
                         .addHandlerLast(new WriteTimeoutHandler(3)));
 
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:8081")
+                .baseUrl(SERVICE_ACCOUNT_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 //.clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient))) // timeout
                 .build();
 
         return webClient.get()
-                .uri("/banck-account/summary/"+customer+"/list")
+                .uri("/banck-account/summary/" + customer + "/list")
                 .retrieve()
                 .bodyToFlux(ProductSummaryDto.class).flatMap(o -> {
             return Mono.just(o);
