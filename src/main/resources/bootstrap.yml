@@ -2,8 +2,21 @@ server:
   port: 8085
 
 spring:
+  profiles:
+    active: qas
   application:
     name: report-microservice
+
+---
+spring:
+  profiles: dev
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:9998
+---
+spring:
+  profiles: qas
   cloud:
     config:
       enabled: true
